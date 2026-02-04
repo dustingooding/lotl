@@ -1,0 +1,2 @@
+# Clippy linting configuration
+msrv = "1.89.0"
