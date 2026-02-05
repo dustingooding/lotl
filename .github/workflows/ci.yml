@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  RUST_VERSION: 1.89.0
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: 'lint'
+
+      - name: Check formatting and linting
+        run: |
+          just fmt-check
+          just clippy
+
+  build-linux:
+    name: Build and Test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: 'test'
+
+      - name: Run tests (debug)
+        run: |
+          just test
+
+      - name: Run tests (release)
+        run: |
+          just test-release
+
+  build-android:
+    name: Build (Android ${{ matrix.ndk_target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ndk_target: arm64-v8a
+            rust_target: aarch64-linux-android
+          - ndk_target: armeabi-v7a
+            rust_target: armv7-linux-androideabi
+          - ndk_target: x86_64
+            rust_target: x86_64-linux-android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: 'android-${{ matrix.ndk_target }}'
+
+      - name: Install Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+          local-cache: true
+
+      - name: Install Rust target
+        run: rustup target add ${{ matrix.rust_target }}
+
+      - name: Build for Android (release)
+        run: just build-android-target-release ${{ matrix.ndk_target }}
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+
+      - name: Generate coverage
+        run: |
+          just coverage-ci
+
+      - name: Upload to codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./cobertura.xml
+          fail_ci_if_error: false
+        continue-on-error: true
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(grep -oP 'line-rate="\K[^"]+' cobertura.xml | head -1 | awk '{print $1 * 100}')
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "WARNING: Coverage $COVERAGE% is below 80% threshold"
+            # Don't fail for now, just warn
+            # exit 1
+          fi
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: 'docs'
+
+      - name: Build docs
+        run: |
+          just docs-ci
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+
+      - name: Run security audit
+        run: |
+          just audit
+        continue-on-error: true

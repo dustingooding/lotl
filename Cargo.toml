@@ -1,0 +1,76 @@
+[package]
+name = "lotl"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89.0"
+authors = ["lotl contributors"]
+license = "AGPL-3.0-only"
+description = "Signal Protocol (X3DH + Double Ratchet) session management with plug-in transports"
+repository = "https://github.com/dustingooding/lotl"
+keywords = ["signal", "encryption", "e2ee", "ratchet", "x3dh"]
+categories = ["cryptography"]
+
+[lib]
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[dependencies]
+# Core libsignal dependencies - using git dependency to avoid linting third-party code
+libsignal-protocol = { git = "https://github.com/signalapp/libsignal.git", tag = "v0.80.0" }
+
+# Random
+rand = "0.8"
+
+# Test dependencies
+tokio = { version = "1.0", features = ["rt", "rt-multi-thread", "macros", "sync"] }
+
+# Async trait support
+async-trait = "0.1"
+
+# SQLite database support with SQLCipher encryption
+rusqlite = { version = "0.32", features = ["chrono"] }
+
+# Serialization support
+bincode = "1.3"
+serde = { version = "1.0", features = ["derive"] }
+
+# Error handling
+thiserror = "1.0"
+
+# UniFFI for cross-platform bindings
+uniffi = "0.28"
+
+# Cryptographic hashing
+sha2 = "0.10"
+
+# HKDF for key derivation
+hkdf = "0.12"
+
+# Nostr protocol implementation (optional)
+nostr = { version = "0.35", optional = true }
+
+# JSON support
+serde_json = "1.0"
+
+# Hex encoding/decoding
+hex = "0.4"
+
+# Base64 encoding/decoding
+base64 = "0.22"
+
+# Platform-specific dependencies
+[target.'cfg(target_os = "linux")'.dependencies]
+secret-service = { version = "4.0", features = ["rt-tokio-crypto-rust"] }
+rusqlite = { version = "0.32", features = ["bundled-sqlcipher"] }
+
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }
+
+[dev-dependencies]
+tempfile = "3.14"
+
+[features]
+default = []
+nostr = ["dep:nostr"]
+
+[workspace]
+resolver = "2"

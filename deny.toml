@@ -1,0 +1,32 @@
+# cargo-deny configuration (v2)
+
+[advisories]
+version = 2
+ignore = [
+    { id = "RUSTSEC-2024-0370", reason = "unmaintained" },
+    { id = "RUSTSEC-2024-0436", reason = "unmaintained" },
+    { id = "RUSTSEC-2025-0141", reason = "unmaintained" },
+]
+
+[licenses]
+version = 2
+allow = [
+    "AGPL-3.0-only",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unlicense",
+]
+
+[bans]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-git = [
+    "https://github.com/signalapp/libsignal.git",
+    "https://github.com/signalapp/SparsePostQuantumRatchet.git",
+]

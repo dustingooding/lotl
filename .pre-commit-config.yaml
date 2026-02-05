@@ -1,0 +1,12 @@
+# Pre-commit hooks for code quality checks
+# See https://pre-commit.com for more information
+
+repos:
+  - repo: local
+    hooks:
+      - id: fmt-check
+        name: Format check
+        entry: just fmt-check
+        language: system
+        types: [rust]
+        pass_filenames: false
