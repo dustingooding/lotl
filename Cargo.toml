@@ -9,6 +9,19 @@ description = "Signal Protocol (X3DH + Double Ratchet) session management with p
 repository = "https://github.com/dustingooding/lotl"
 keywords = ["signal", "encryption", "e2ee", "ratchet", "x3dh"]
 categories = ["cryptography"]
+exclude = [
+    ".github/",
+    ".claude/",
+    "justfile",
+    ".mise.toml",
+    ".envrc",
+    "deny.toml",
+    ".clippy.toml",
+    ".rustfmt.toml",
+    ".pre-commit-config.yaml",
+    "rust-toolchain.toml",
+    "CONTRIBUTING.md",
+]
 
 [lib]
 crate-type = ["lib", "staticlib", "cdylib"]
@@ -18,7 +31,7 @@ crate-type = ["lib", "staticlib", "cdylib"]
 libsignal-protocol = { git = "https://github.com/signalapp/libsignal.git", tag = "v0.80.0" }
 
 # Random
-rand = "0.8"
+rand = "0.9"
 
 # Test dependencies
 tokio = { version = "1.0", features = ["rt", "rt-multi-thread", "macros", "sync"] }
@@ -61,6 +74,9 @@ base64 = "0.22"
 [target.'cfg(target_os = "linux")'.dependencies]
 secret-service = { version = "4.0", features = ["rt-tokio-crypto-rust"] }
 rusqlite = { version = "0.32", features = ["bundled-sqlcipher"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+rusqlite = { version = "0.32", features = ["bundled"] }
 
 [build-dependencies]
 uniffi = { version = "0.28", features = ["build"] }
