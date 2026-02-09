@@ -121,6 +121,31 @@ jobs:
         run: |
           just docs-ci
 
+      - name: Add redirect index
+        run: |
+          echo '<meta http-equiv="refresh" content="0; url=lotl/index.html">' > target/doc/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/doc
+
+  docs-deploy:
+    name: Deploy Documentation
+    if: github.ref == 'refs/heads/main'
+    needs: docs
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   security:
     name: Security Audit
     runs-on: ubuntu-latest
